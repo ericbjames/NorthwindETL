@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %run "./setup_product"
+#%run "./setup_product"
 
 # COMMAND ----------
 
@@ -20,6 +20,18 @@ spark = SparkSession.builder \
 
 
 # northwind_group4._airbyte_raw_categories
+
+
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
 
 
 
@@ -134,4 +146,4 @@ df_suppliers_transformed.write \
 
 # COMMAND ----------
 
-
+# MAGIC   %pip install great-expectations
