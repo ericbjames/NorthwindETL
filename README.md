@@ -18,7 +18,13 @@ Initial Set up:
 The data was ingested from the AWS RDS using airbyte to the databricks datalake initially, and then processed using the medallion architecture.
 
 Bronze Stage:
-The bronze stage involves reading in the raw data from the source and transforming it into a structured format. The transformed data is then stored in a Delta table. The code for the bronze stage is provided below:
+The bronze stage involves reading in the raw data from the source and transforming it into a structured format. The transformed data is then stored in a Delta table. 
+
+ A large number of tables were provided from the Northwind ETL database, however only the tables below are chosen to be processed further:
+- products
+- orders
+- orders_details
+- categories
 
 Silver Stage:
 
