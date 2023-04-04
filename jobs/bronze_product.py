@@ -48,6 +48,7 @@ df_categories_transformed.write \
     .option("path", "dbfs:/user/hive/warehouse/northwind_group4.db/bronze_categories") \
     .saveAsTable("northwind_group4.bronze_categories")
 
+df_categories_transformed.show()
 
 # COMMAND ----------
 
@@ -163,9 +164,8 @@ df_orders_transformed.printSchema()
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC USE northwind_group4;
-# MAGIC ALTER TABLE bronze_orders DROP product_id, unit_price, quantity, discount;
+
+
 
 # COMMAND ----------
 
