@@ -93,12 +93,6 @@ df_products_transformed.show()
 
 # COMMAND ----------
 
-df_orders = spark.read.format("delta") \
-        .load("dbfs:/user/hive/warehouse/northwind_group4.db/_airbyte_raw_order_details")
-df_orders.show()
-
-# COMMAND ----------
-
 
 # Read the data from the Delta table
 df_order_details = spark.read.format("delta") \
@@ -165,19 +159,94 @@ df_orders_transformed.write \
 
 # COMMAND ----------
 
+df_orders_transformed.printSchema()
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC USE northwind_group4;
+# MAGIC ALTER TABLE bronze_orders DROP product_id, unit_price, quantity, discount;
+
+# COMMAND ----------
+
+# shippers, customers, suppliers.
+# Read the data from the Delta table
+df_shippers = spark.read.format("delta") \
+        .load("dbfs:/user/hive/warehouse/northwind_group4.db/_airbyte_raw_shippers")
+df_shippers.show()
+
 
 
 # COMMAND ----------
 
+# Define the schema for the JSON data
+json_schema = StructType([
+  StructField("shipper_id", IntegerType(), True),
+  StructField("company_name", StringType(), True),
+  StructField("phone", StringType(), True)
+])
+
+# Parse the JSON data
+df_shippers_parsed = df_shippers.withColumn("data", from_json(col("_airbyte_data"), json_schema)) \
+                                 .drop("_airbyte_ab_id", "_airbyte_data", "_airbyte_emitted_at") \
+                                 .selectExpr("data.*")
+
+df_shippers_parsed.show()
+
+df_shippers_parsed.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .option("mergeSchema", "true") \
+    .option("path", "dbfs:/user/hive/warehouse/northwind_group4.db/bronze_shippers") \
+    .saveAsTable("northwind_group4.bronze_shippers")
+
+# COMMAND ----------
+
+# shippers, customers, suppliers.
+# Read the data from the Delta table
+df_customers = spark.read.format("delta") \
+        .load("dbfs:/user/hive/warehouse/northwind_group4.db/_airbyte_raw_customers")
+
+
+df_customers.show()
+
+# COMMAND ----------
+
+schema = "customer_id STRING, company_name STRING, contact_name STRING, contact_title STRING, address STRING, city STRING, region STRING, postal_code STRING, country STRING, phone STRING, fax STRING"
+df_customers_parsed = df_customers.withColumn("_airbyte_data", from_json(col("_airbyte_data"), schema))
+
+# Extract the columns from the parsed JSON data
+df_customers_parsed = df_customers_parsed.select("_airbyte_data.*")
+
+# Show the resulting DataFrame
+df_customers_parsed.show()
+
+df_customers_parsed.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .option("mergeSchema", "true") \
+    .option("path", "dbfs:/user/hive/warehouse/northwind_group4.db/bronze_customers") \
+    .saveAsTable("northwind_group4.bronze_customers")
+
+# COMMAND ----------
+
+df_suppliers = spark.read.format("delta") \
+        .load("dbfs:/user/hive/warehouse/northwind_group4.db/_airbyte_raw_suppliers")
 
 
 # COMMAND ----------
 
+schema = "supplier_id INT, company_name STRING, contact_name STRING, contact_title STRING, address STRING, city STRING, region STRING, postal_code STRING, country STRING, phone STRING, fax STRING"
+df_suppliers_parsed = df_suppliers.withColumn("_airbyte_data", from_json(col("_airbyte_data"), schema))
+df_suppliers_parsed = df_suppliers_parsed.select("_airbyte_data.*")
 
-
-# COMMAND ----------
-
-
+df_suppliers_parsed.show()
+df_suppliers_parsed.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .option("mergeSchema", "true") \
+    .option("path", "dbfs:/user/hive/warehouse/northwind_group4.db/bronze_suppliers") \
+    .saveAsTable("northwind_group4.bronze_suppliers")
 
 # COMMAND ----------
 
